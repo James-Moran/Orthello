@@ -9,5 +9,24 @@ import Board
 -- This will need to extract the Board from the world state and draw it
 -- as a grid plus pieces.
 drawWorld :: World -> Picture
-drawWorld w = Color blue $ Circle 100
+drawWorld w = grid
+ where
 
+  darkGreen = makeColor 0.1 0.8 0.5 0.6
+
+  grid = pictures
+    [color darkGreen $ polygon [(-320, -320), (-320, 320), (320,320), (320,-320)],
+    color black (line [ (-240, -320), (-240,  320) ]),
+    color black (line [ (-160, -320), (-160,  320) ]),
+    color black (line [ (-80, -320), (-80,  320) ]),
+    color black (line [ (0, -320), (0,  320) ]),
+    color black (line [ (80, -320), (80,  320) ]),
+    color black (line [ (160, -320), (160,  320) ]),
+    color black (line [ (240, -320), (240,  320) ]),
+    color black (line [ (-320, -240), (320,  -240) ]),
+    color black (line [ (-320, -160), (320,  -160) ]),
+    color black (line [ (-320, -80), (320,  -80) ]),
+    color black (line [ (-320, 0), (320, 0) ]),
+    color black (line [ (-320, 80), (320,  80) ]),
+    color black (line [ (-320, 160), (320,  160) ]),
+    color black (line [ (-320, 240), (320,  240) ])]
