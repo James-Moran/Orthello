@@ -1,13 +1,23 @@
 module Board where
 
+import Data.List
+
 data Col = Black | White
-  deriving Show
+  deriving (Show, Eq)
 
 other :: Col -> Col
 other Black = White
 other White = Black
 
 type Position = (Int, Int)
+
+data ChangeSuccess a = Change (a,Bool) Bool
+
+possibleChange :: ChangeSuccess a -> (a -> ChangeSuccess a) -> ChangeSuccess a
+
+Change (a, change) success `possibleChange` f = case (f a) of
+                                                    Change (b, True) _ -> Change (b, False) True
+                                                    Change (_, False) _ -> Change (a, False) success
 
 -- A Board is a record containing the board size (a board is a square grid, n *
 -- n), the number of consecutive passes, and a list of pairs of position and
@@ -39,8 +49,7 @@ initWorld = World initBoard Black
 -- (e.g. outside the range of the board, there is a piece already there,
 -- or the move does not flip any opposing pieces)
 makeMove :: Board -> Col -> Position -> Maybe Board
-makeMove = undefined
--- makeMove b col pos = if insideBoard b pos && positionFree b pos && flipCheck b col pos then # Update Board
+makeMove board col pos = if (insideBoard board pos) && (positionFree board pos) then case flipMove board col pos of Change (b, _) True -> Just b else Nothing
 
 -- Returns true if inside board else false
 insideBoard :: Board -> Position -> Bool
@@ -50,22 +59,28 @@ insideBoard board (x,y) = x >= 0 && y>=0 && x < size board && y < size board
 positionFree :: Board -> Position -> Bool
 positionFree board pos = foldl (\acc p -> if (fst p) == pos then False else acc) True (pieces board)
 
-flipCheck :: Board -> Col -> Position -> (Board, Bool)
-flipCheck = undefined
+flipMove :: Board -> Col -> Position -> ChangeSuccess Board
+flipMove b c p = directionCheck c p ((+1),(+0)) b `possibleChange` directionCheck c p ((+0),(+1)) `possibleChange` directionCheck c p ((subtract 1),(+0)) `possibleChange` directionCheck c p ((+0),(subtract 1)) `possibleChange` directionCheck c p ((+1),(+1)) `possibleChange` directionCheck c p ((+1),(subtract 1)) `possibleChange` directionCheck c p ((subtract 1),(+1)) `possibleChange` directionCheck c p ((subtract 1),(subtract 1))
 
-horizontalCheck :: Board -> Col -> Position -> (Board, Bool)
-horizontalCheck = undefined
-
-leftCheck :: Board -> Col -> Position -> Bool -> ()
-leftCheck b col (x,y) seen = case seen of
-                               True ->
-                               False -> case find   of
-                                          Nothing -> False
-                                          _ -> snd
+-- Changes the colour of the peice at the given position
+-- If position found board is returned
+changeCol :: Board -> Position -> Board
+changeCol b pos = Board (size b) (passes b) (foldr (\(p, c) acc -> if p /= pos then (p, c) : acc else (p, other c) : acc) [] (pieces b))
 
 -- Returns colour at positon given
-positionColour :: Board -> Position -> Maybe [(Position,Col)]
-positionColour board pos = find (\z -> fst z = pos) (pieces board)
+positionColour :: Board -> Position -> Maybe (Position,Col)
+positionColour board pos = find (\z -> fst z == pos) (pieces board)
+
+-- Checks the
+directionCheck :: Col -> Position -> ((Int->Int),(Int->Int)) -> Board -> ChangeSuccess Board
+directionCheck col (x,y) (op1,op2) b = case positionColour b (op1 x, op2 y) of
+                                          Nothing     -> Change (b, False) False
+                                          Just (p, c) -> if (c == other col) then directionCheck' col ((op1 x),(op2 y)) (op1,op2) (changeCol b (x,y)) else Change (b, False) False
+
+directionCheck' :: Col -> Position-> ((Int->Int),(Int->Int)) -> Board -> ChangeSuccess Board
+directionCheck' col (x,y) (op1,op2) b = case positionColour b (op1 x, op2 y) of
+                                            Nothing     -> Change (b, False) False
+                                            Just (p, c) -> if (c == other col) then directionCheck' col ((op1 x),(op2 y)) (op1,op2) (changeCol b (x,y)) else Change (b, True) False
 
 -- Check the current score
 -- Returns a pair of the number of black pieces, and the number of
@@ -83,4 +98,4 @@ gameOver board = if passes board == 2 || length (pieces board) == size board * s
 -- An evaluation function for a minimax search. Given a board and a colour
 -- return an integer indicating how good the board is for that colour.
 evaluate :: Board -> Col -> Int
-evaluate = undefined
+evaluate board col = foldl (\acc p -> if snd p == col then acc+1 else acc-1) mian0 (pieces board)
