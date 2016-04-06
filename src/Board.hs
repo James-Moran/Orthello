@@ -98,4 +98,4 @@ gameOver board = if passes board == 2 || length (pieces board) == size board * s
 -- An evaluation function for a minimax search. Given a board and a colour
 -- return an integer indicating how good the board is for that colour.
 evaluate :: Board -> Col -> Int
-evaluate board col = foldl (\acc p -> if snd p == col then acc+1 else acc-1) mian0 (pieces board)
+evaluate board col = foldl (\acc p -> if snd p == col then acc+1 else acc-1) 0 (pieces board)

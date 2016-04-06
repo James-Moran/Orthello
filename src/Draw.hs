@@ -33,7 +33,9 @@ drawWorld w = result
     color black (line [ (-320, 160), (320,  160) ]),
     color black (line [ (-320, 240), (320,  240) ])]
 
-  boardPieces = mconcat [map drawPiece (pieces (board w))]
+  -- boardPieces = mconcat [map drawPiece (pieces (board w))]
+  -- Ben, just btw map returned a list already
+  boardPieces = map drawPiece (pieces (board w))
 
 drawPiece :: (Position, Col) -> Picture
 drawPiece ((x,y), col) = piece
