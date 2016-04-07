@@ -13,37 +13,42 @@ drawWorld :: World -> Picture
 drawWorld w = result
  where
 
-  result = pictures [grid, mconcat boardPieces]
+  result = pictures [grid, mconcat boardPieces, mconcat lines]
   darkGreen = makeColor 0.1 0.8 0.5 0.6
 
-  grid = pictures
-    [color darkGreen $ polygon [(-320, -320), (-320, 320), (320,320), (320,-320)],
-    color black (line [ (-240, -320), (-240,  320) ]),
-    color black (line [ (-160, -320), (-160,  320) ]),
-    color black (line [ (-80, -320), (-80,  320) ]),
-    color black (line [ (0, -320), (0,  320) ]),
-    color black (line [ (80, -320), (80,  320) ]),
-    color black (line [ (160, -320), (160,  320) ]),
-    color black (line [ (240, -320), (240,  320) ]),
-    color black (line [ (-320, -240), (320,  -240) ]),
-    color black (line [ (-320, -160), (320,  -160) ]),
-    color black (line [ (-320, -80), (320,  -80) ]),
-    color black (line [ (-320, 0), (320, 0) ]),
-    color black (line [ (-320, 80), (320,  80) ]),
-    color black (line [ (-320, 160), (320,  160) ]),
-    color black (line [ (-320, 240), (320,  240) ])]
+  sizeOfCell = 80
+  gridSize = size (board w) * sizeOfCell
+  lineCoords = [(-gridSize + sizeOfCell), (-gridSize + (sizeOfCell * 2))..(gridSize - sizeOfCell)]
 
-  -- boardPieces = mconcat [map drawPiece (pieces (board w))]
-  -- Ben, just btw map returned a list already
-  boardPieces = map drawPiece (pieces (board w))
+  grid = color darkGreen $ rectangleSolid (fromIntegral(gridSize)) (fromIntegral(gridSize))
 
-drawPiece :: (Position, Col) -> Picture
-drawPiece ((x,y), col) = piece
+  boardPieces = map (drawPiece (gridSize) (sizeOfCell)) (pieces (board w))
+  lines = map (drawLine (gridSize)) lineCoords 
+
+drawPiece :: Int -> Int -> (Position, Col) -> Picture
+drawPiece gridSize sizeOfCell ((x,y), col) = piece
 
  where
+  
+  sizeOfCellFloat = fromIntegral (sizeOfCell)
+  gridSizeFloat = fromIntegral (gridSize)
+
   piece =
-   translate (-320.0 + (fromIntegral x) * 80.0 + 40.0)
-             (320 - (fromIntegral y) * 80.0 - 40.0) $
+   translate ((-gridSizeFloat * 0.5) + ((fromIntegral x) * sizeOfCellFloat) + (0.5 * sizeOfCellFloat))
+             ((gridSizeFloat * 0.5) - ((fromIntegral y) * sizeOfCellFloat) - (0.5 * sizeOfCellFloat)) $
         case col of
           White -> color white (thickCircle 1 75)
           Black -> color black (thickCircle 1 75)
+
+drawLine :: Int -> Int -> Picture
+drawLine gridSize coordinate = pictures [line1, line2]
+
+ where
+
+  coordinateFloat = fromIntegral (coordinate)
+  gridSizeFloat = fromIntegral (gridSize)
+
+  line1 = 
+   color black (line [ (coordinateFloat, -gridSizeFloat), (coordinateFloat, gridSizeFloat) ])
+  line2 = 
+   color black (line [ (-gridSizeFloat, coordinateFloat), (gridSizeFloat, coordinateFloat) ])
