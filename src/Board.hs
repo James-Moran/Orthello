@@ -49,7 +49,11 @@ initWorld = World initBoard Black
 -- (e.g. outside the range of the board, there is a piece already there,
 -- or the move does not flip any opposing pieces)
 makeMove :: Board -> Col -> Position -> Maybe Board
-makeMove board col pos = if (insideBoard board pos) && (positionFree board pos) then case flipMove board col pos of Change (b, _) True -> Just b else Nothing
+makeMove board col pos =
+	if (insideBoard board pos) && (positionFree board pos)
+		then case flipMove board col pos of
+			Change (b, _) True -> Just b
+		else Nothing
 
 -- Returns true if inside board else false
 insideBoard :: Board -> Position -> Bool
