@@ -15,7 +15,7 @@ import Debug.Trace
 -- to stderr, which can be a very useful way of debugging!
 handleInput :: Event  -> World ->  World
 handleInput (EventKey (MouseButton LeftButton) Up m (x, y)) w 
---	= w{ board = (board w){pieces = ((1,1), Black) : pieces (board w)} }
+--	= w{ board = (board w){pieces = ((1,1), Black) : pieces (board w)} } this will update the picture, just for testing. 
     = case function x y w of
 -- if nothing, return the old world
         Nothing -> w 
