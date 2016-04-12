@@ -11,13 +11,7 @@ other White = Black
 
 type Position = (Int, Int)
 
-data ChangeSuccess a = Change (a,Bool) Bool
 
-possibleChange :: ChangeSuccess a -> (a -> ChangeSuccess a) -> ChangeSuccess a
-
-Change (a, change) success `possibleChange` f = case (f a) of
-                                                    Change (b, True) _ -> Change (b, False) True
-                                                    Change (_, False) _ -> Change (a, False) success
 
 -- A Board is a record containing the board size (a board is a square grid, n *
 -- n), the number of consecutive passes, and a list of pairs of position and
@@ -30,7 +24,7 @@ data Board = Board { size :: Int,
   deriving Show
 
 -- Default board is 8x8, neither played has passed, with 4 initial pieces
-initBoard = Board 8 0 [((3,3), Black), ((3, 4), White),
+initBoard = Board 8 0 [((3,3), Black), ((3,4), White),
                        ((4,3), White), ((4,4), Black)]
 
 -- Overall state is the board and whose turn it is, plus any further
@@ -49,42 +43,56 @@ initWorld = World initBoard Black
 -- (e.g. outside the range of the board, there is a piece already there,
 -- or the move does not flip any opposing pieces)
 makeMove :: Board -> Col -> Position -> Maybe Board
-makeMove board col pos =
-	if (insideBoard board pos) && (positionFree board pos)
-		then case flipMove board col pos of
-			Change (b, _) True -> Just b
-		else Nothing
+makeMove board col pos = if valid board pos then flipMove board col pos else Nothing
 
--- Returns true if inside board else false
-insideBoard :: Board -> Position -> Bool
-insideBoard board (x,y) = x >= 0 && y>=0 && x < size board && y < size board
+-- Tests if the position is within the board and not taken
+valid :: Board -> Position -> Bool
+valid b p = let insideBoard board (x,y) = x >= 0 && y>=0 && x < size board && y < size board
+                positionFree board pos = foldl (\acc p -> if (fst p) == pos then False else acc) True (pieces board)
+            in insideBoard b p && positionFree b p
 
--- Returns true if position free else false
-positionFree :: Board -> Position -> Bool
-positionFree board pos = foldl (\acc p -> if (fst p) == pos then False else acc) True (pieces board)
+-- Flips the opposing peices captured
+flipMove :: Board -> Col -> Position -> Maybe Board
+flipMove b c p = let flipCaptured = (b,False)         ?>
+                      dirMove c p ((+1),(+0))         ?>
+                      dirMove c p ((+0),(+1))         ?>
+                      dirMove c p ((subtract 1),(+0)) ?>
+                      dirMove c p ((+0),(subtract 1)) ?>
+                      dirMove c p ((+1),(+1))         ?>
+                      dirMove c p ((+1),(subtract 1)) ?>
+                      dirMove c p ((subtract 1),(+1)) ?>
+                      dirMove c p ((subtract 1),(subtract 1))
+                 in if (snd flipCaptured) then Just (userMove (fst flipCaptured) c p) else Nothing
 
-flipMove :: Board -> Col -> Position -> ChangeSuccess Board
-flipMove b c p = directionCheck c p ((+1),(+0)) b `possibleChange` directionCheck c p ((+0),(+1)) `possibleChange` directionCheck c p ((subtract 1),(+0)) `possibleChange` directionCheck c p ((+0),(subtract 1)) `possibleChange` directionCheck c p ((+1),(+1)) `possibleChange` directionCheck c p ((+1),(subtract 1)) `possibleChange` directionCheck c p ((subtract 1),(+1)) `possibleChange` directionCheck c p ((subtract 1),(subtract 1))
+-- Adds the move made to the board
+userMove :: Board -> Col -> Position -> Board
+userMove b c p = Board (size b) (passes b) ((p,c):(pieces b))
 
--- Changes the colour of the peice at the given position
--- If position found board is returned
+-- Keeps new board if flipping of peices is successful, bool maintains if any flip directions has been successful
+(?>) :: (Board, Bool) -> (Board -> Maybe Board) -> (Board, Bool)
+(?>) (currBoard, result) func = case (func currBoard) of
+                                  Just newBoard -> (newBoard, True)
+                                  Nothing       -> (currBoard, result)
+
+-- Checks next piece in the specified direction is of the opposite colour, if so flip it, else return nothing
+dirMove :: Col -> Position -> ((Int->Int),(Int->Int)) ->  Board -> Maybe Board
+dirMove col (x,y) (op1,op2) board = case positionColour board (op1 x, op2 y) of
+                                      Just (p, c) -> if (other col) == c then dirMove' col (op1 x, op2 y) (op1,op2) (changeCol board p) else Nothing
+                                      Nothing     -> Nothing
+
+-- Flips the opposing pieces until it reaches one of the original colour, if it doesn't find one it returns nothing
+dirMove' :: Col -> Position -> ((Int->Int),(Int->Int)) -> Board -> Maybe Board
+dirMove' col (x,y) (op1,op2) board = case positionColour board (op1 x, op2 y) of
+                                      Just (p, c) -> if col == c then (Just board ) else dirMove' col (op1 x, op2 y) (op1,op2) (changeCol board p)
+                                      Nothing     -> Nothing
+
+-- Changes the colour of the position given
 changeCol :: Board -> Position -> Board
-changeCol b pos = Board (size b) (passes b) (foldr (\(p, c) acc -> if p /= pos then (p, c) : acc else (p, other c) : acc) [] (pieces b))
+changeCol board pos = Board (size board) (passes board) (foldl (\acc (p, c) -> if (p == pos) then (p, other c) : acc else (p, c) : acc) [] (pieces board))
 
 -- Returns colour at positon given
 positionColour :: Board -> Position -> Maybe (Position,Col)
 positionColour board pos = find (\z -> fst z == pos) (pieces board)
-
--- Checks the
-directionCheck :: Col -> Position -> ((Int->Int),(Int->Int)) -> Board -> ChangeSuccess Board
-directionCheck col (x,y) (op1,op2) b = case positionColour b (op1 x, op2 y) of
-                                          Nothing     -> Change (b, False) False
-                                          Just (p, c) -> if (c == other col) then directionCheck' col ((op1 x),(op2 y)) (op1,op2) (changeCol b (x,y)) else Change (b, False) False
-
-directionCheck' :: Col -> Position-> ((Int->Int),(Int->Int)) -> Board -> ChangeSuccess Board
-directionCheck' col (x,y) (op1,op2) b = case positionColour b (op1 x, op2 y) of
-                                            Nothing     -> Change (b, False) False
-                                            Just (p, c) -> if (c == other col) then directionCheck' col ((op1 x),(op2 y)) (op1,op2) (changeCol b (x,y)) else Change (b, True) False
 
 -- Check the current score
 -- Returns a pair of the number of black pieces, and the number of

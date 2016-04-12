@@ -13,16 +13,16 @@ import Debug.Trace
 -- trace :: String -> a -> a
 -- 'trace' returns its second argument while printing its first argument
 -- to stderr, which can be a very useful way of debugging!
-handleInput :: Event  -> World ->  World
-handleInput (EventKey (MouseButton LeftButton) Up m (x, y)) w 
---	= w{ board = (board w){pieces = ((1,1), Black) : pieces (board w)} } this will update the picture, just for testing. 
+handleInput :: Event -> World -> World
+handleInput (EventKey (MouseButton LeftButton) Up m (x, y)) w
+--	= w{ board = (board w){pieces = ((1,1), Black) : pieces (board w)} } this will update the picture, just for testing.
     = case function x y w of
 -- if nothing, return the old world
-        Nothing -> w 
+        Nothing -> trace ("Invalid Move") w
 -- if the function returned a board, show the x, y and update the board also update the turn.
         Just b  -> trace ("Left button pressed at: " ++ show (x,y)) w{ board = b, turn = other (turn w) }
-handleInput (EventMotion (x, y)) w
-    = trace ("Mouse moved to: " ++ show (x,y)) w
+-- handleInput (EventMotion (x, y)) w
+--     = trace ("Mouse moved to: " ++ show (x,y)) w
 handleInput e w  = w
 
 function :: Float -> Float ->  World -> Maybe Board
@@ -32,7 +32,7 @@ function x y w = makeMove (board w) (turn w) (x',y')
 -- for example, x:-20 y:-20 will return          x':-1+4=3      y':4-0 =4 which is the bottom left white piece at (3,4)
 	x' = floor (x / 80.0) + (size (board w) `div` 2)
 	y' = (size (board w) `div` 2)- ceiling (y/80.0)
-	
+
 
 
 {- Hint: when the 'World' is in a state where it is the human player's
