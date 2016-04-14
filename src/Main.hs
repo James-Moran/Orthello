@@ -22,9 +22,8 @@ import AI
 -- move
 
 main :: IO ()
-main = play (InWindow "Othello" (640, 480) (10, 10)) black 10
+main = play (InWindow "Othello" (640, 640) (10, 10)) black 10
             initWorld -- in Board.hs
             drawWorld -- in Draw.hs
             handleInput -- in Input.hs
             updateWorld -- in AI.hs
-

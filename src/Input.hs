@@ -16,13 +16,12 @@ import Debug.Trace
 handleInput :: Event -> World -> World
 handleInput (EventKey (MouseButton LeftButton) Up m (x, y)) w
 --	= w{ board = (board w){pieces = ((1,1), Black) : pieces (board w)} } this will update the picture, just for testing.
-    = case function x y w of
+    = if (turn w == White) then case function x y w of
 -- if nothing, return the old world
         Nothing -> trace ("Invalid Move") w
 -- if the function returned a board, show the x, y and update the board also update the turn.
         Just b  -> trace ("Left button pressed at: " ++ show (x,y)) w{ board = b, turn = other (turn w) }
--- handleInput (EventMotion (x, y)) w
---     = trace ("Mouse moved to: " ++ show (x,y)) w
+            else trace("AI turn") w
 handleInput e w  = w
 
 function :: Float -> Float ->  World -> Maybe Board

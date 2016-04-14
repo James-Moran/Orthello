@@ -51,7 +51,7 @@ valid b p = let insideBoard board (x,y) = x >= 0 && y>=0 && x < size board && y 
                 positionFree board pos = foldl (\acc p -> if (fst p) == pos then False else acc) True (pieces board)
             in insideBoard b p && positionFree b p
 
--- Flips the opposing peices captured
+-- Flips the opposing peices captured and adds the piece placed
 flipMove :: Board -> Col -> Position -> Maybe Board
 flipMove b c p = let flipCaptured = (b,False)         ?>
                       dirMove c p ((+1),(+0))         ?>
