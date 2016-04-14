@@ -7,21 +7,17 @@ import AI
 
 import Debug.Trace
 
--- Update the world state given an input event. Some sample input events
--- are given; when they happen, there is a trace printed on the console
---
--- trace :: String -> a -> a
--- 'trace' returns its second argument while printing its first argument
--- to stderr, which can be a very useful way of debugging!
+-- Update the world state given an input event.
 handleInput :: Event -> World -> World
 handleInput (EventKey (MouseButton LeftButton) Up m (x, y)) w
---	= w{ board = (board w){pieces = ((1,1), Black) : pieces (board w)} } this will update the picture, just for testing.
-    = if (turn w == White) then case function x y w of
--- if nothing, return the old world
-        Nothing -> trace ("Invalid Move") w
--- if the function returned a board, show the x, y and update the board also update the turn.
-        Just b  -> trace ("Left button pressed at: " ++ show (x,y)) w{ board = b, turn = other (turn w) }
-            else trace("AI turn") w
+    = if (turn w == Black) then case function x y w of
+        Nothing -> trace ("Invalid Move") w -- if nothing, return the old world
+        Just b  -> trace ("Left button pressed at: " ++ show (x,y)) w{ board = b, turn = other (turn w) } -- if the function returned a board, show the x, y and update the board also update the turn.
+                   else trace("AI turn") w
+handleInput (EventKey (Char k) Down _ _) w = case k of
+        'n' -> trace ("New game") initWorld
+        'h' -> trace ("Hints") w{ hints = not $ hints w }
+        _   -> trace ("Invalid key") w
 handleInput e w  = w
 
 function :: Float -> Float ->  World -> Maybe Board

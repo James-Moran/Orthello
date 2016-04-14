@@ -35,9 +35,11 @@ initBoard = Board 8 0 [((3,3), Black), ((3,4), White),
 -- will be useful (information for the AI, for example, such as where the
 -- most recent moves were).
 data World = World { board :: Board,
-                     turn :: Col }
+                     turn :: Col,
+                     game_over :: Bool,
+                     hints :: Bool }
 
-initWorld = World initBoard Black
+initWorld = World initBoard Black False False
 
 -- Play a move on the board; return 'Nothing' if the move is invalid
 -- (e.g. outside the range of the board, there is a piece already there,

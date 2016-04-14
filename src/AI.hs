@@ -77,8 +77,9 @@ maxPosEvalList pos tree = foldl (\acc moves -> (pos, evaluate (game_board tree) 
 -- Update the world state after some time has passed
 updateWorld :: Float -> World -> World -- Float is time since last update
 updateWorld t w = let tree = (buildTree (moveGenerator) (board w) (turn w))
-                  in if null $ next_moves tree then w{ board = Board (size $ board w) ((passes $ board w) + 1) (pieces $ board w), turn = other (turn w) }
-                     else if (turn w == Black) then w{ board = fromJust(makeMove (board w) (turn w) (getBestMove 1 tree)), turn = other (turn w) } else w
+                  in if gameOver $ board w then w{ game_over = True }
+                     else if null $ next_moves tree then w{ board = (board w){ passes = (passes $ board w) + 1}, turn = other (turn w) }
+                     else if (turn w == White) then w{ board = fromJust(makeMove (board w) (turn w) (getBestMove 1 tree)), turn = other (turn w) } else w
 
 {- Hint: 'updateWorld' is where the AI gets called. If the world state
  indicates that it is a computer player's turn, updateWorld should use

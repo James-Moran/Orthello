@@ -10,26 +10,39 @@ import Board
 -- This will need to extract the Board from the world state and draw it
 -- as a grid plus pieces.
 drawWorld :: World -> Picture
-drawWorld w = result
- where
+drawWorld w = if game_over w then drawGameOver w else drawBoard w
 
-  result = pictures [grid, mconcat boardPieces, mconcat lines]
-  darkGreen = makeColor 0.1 0.8 0.5 0.6
+drawGameOver :: World -> Picture
+drawGameOver w = do result
+                 where result = Pictures[grid, text]
+                       sizeOfCell = 80
+                       gridSize = size (board w) * sizeOfCell
 
-  sizeOfCell = 80
-  gridSize = size (board w) * sizeOfCell
-  lineCoords = [(-gridSize + sizeOfCell), (-gridSize + (sizeOfCell * 2))..(gridSize - sizeOfCell)]
+                       darkGreen = makeColor 0.1 0.8 0.5 0.6
+                       grid = color darkGreen $ rectangleSolid (fromIntegral(gridSize)) (fromIntegral(gridSize))
 
-  grid = color darkGreen $ rectangleSolid (fromIntegral(gridSize)) (fromIntegral(gridSize))
+                       text = Text "Game Over"
 
-  boardPieces = map (drawPiece (gridSize) (sizeOfCell)) (pieces (board w))
-  lines = map (drawLine (gridSize)) lineCoords 
+drawBoard :: World -> Picture
+drawBoard w = result
+              where
+               result = pictures [grid, mconcat boardPieces, mconcat lines]
+               darkGreen = makeColor 0.1 0.8 0.5 0.6
+
+               sizeOfCell = 80
+               gridSize = size (board w) * sizeOfCell
+               lineCoords = [(-gridSize + sizeOfCell), (-gridSize + (sizeOfCell * 2))..(gridSize - sizeOfCell)]
+
+               grid = color darkGreen $ rectangleSolid (fromIntegral(gridSize)) (fromIntegral(gridSize))
+
+               boardPieces = map (drawPiece (gridSize) (sizeOfCell)) (pieces (board w))
+               lines = map (drawLine (gridSize)) lineCoords
 
 drawPiece :: Int -> Int -> (Position, Col) -> Picture
 drawPiece gridSize sizeOfCell ((x,y), col) = piece
 
  where
-  
+
   sizeOfCellFloat = fromIntegral (sizeOfCell)
   gridSizeFloat = fromIntegral (gridSize)
 
@@ -48,7 +61,7 @@ drawLine gridSize coordinate = pictures [line1, line2]
   coordinateFloat = fromIntegral (coordinate)
   gridSizeFloat = fromIntegral (gridSize)
 
-  line1 = 
+  line1 =
    color black (line [ (coordinateFloat, -gridSizeFloat), (coordinateFloat, gridSizeFloat) ])
-  line2 = 
+  line2 =
    color black (line [ (-gridSizeFloat, coordinateFloat), (gridSizeFloat, coordinateFloat) ])
