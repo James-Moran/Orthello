@@ -14,14 +14,21 @@ drawWorld w = if game_over w then drawGameOver w else drawBoard w
 
 drawGameOver :: World -> Picture
 drawGameOver w = do result
-                 where result = Pictures[grid, text]
-                       sizeOfCell = 80
-                       gridSize = size (board w) * sizeOfCell
+                 where
+                   result = pictures [grid, mconcat boardPieces, mconcat lines, text]
+                   darkGreen = makeColor 0.1 0.8 0.5 0.6
 
-                       darkGreen = makeColor 0.1 0.8 0.5 0.6
-                       grid = color darkGreen $ rectangleSolid (fromIntegral(gridSize)) (fromIntegral(gridSize))
+                   sizeOfCell = 80
+                   gridSize = size (board w) * sizeOfCell
+                   lineCoords = [(-gridSize + sizeOfCell), (-gridSize + (sizeOfCell * 2))..(gridSize - sizeOfCell)]
 
-                       text = Text "Game Over"
+                   grid = color darkGreen $ rectangleSolid (fromIntegral(gridSize)) (fromIntegral(gridSize))
+
+                   boardPieces = map (drawPiece (gridSize) (sizeOfCell)) (pieces (board w))
+                   lines = map (drawLine (gridSize)) lineCoords
+
+
+                   text = Text "Game Over"
 
 drawBoard :: World -> Picture
 drawBoard w = result

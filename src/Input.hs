@@ -10,12 +10,12 @@ import Debug.Trace
 -- Update the world state given an input event.
 handleInput :: Event -> World -> World
 handleInput (EventKey (MouseButton LeftButton) Up m (x, y)) w
-    = if (turn w == Black) then case function x y w of
+    = if (turn w == h_player w) then case function x y w of
         Nothing -> trace ("Invalid Move") w -- if nothing, return the old world
         Just b  -> trace ("Piece Played at:" ++ show (x,y)) w{ previous_world = w, board = b, turn = other (turn w) } -- if the function returned a board, show the x, y and update the board also update the turn.
                    else trace("AI turn") w
 handleInput (EventKey (Char k) Down _ _) w = case k of
-        'n' -> trace ("New game") initWorld
+        'n' -> trace ("New game") initial_world w
         'h' -> trace ("Hints") w{ hints = not $ hints w }
         'u' -> trace ("Undo move") previous_world $ previous_world w
         _   -> trace ("Invalid key") w

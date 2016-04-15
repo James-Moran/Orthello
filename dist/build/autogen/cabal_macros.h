@@ -14,3 +14,10 @@
   (major1) == 1 && (major2) <  8 || \
   (major1) == 1 && (major2) == 8 && (minor) <= 1)
 
+/* package random-1.0.1.1 */
+#define VERSION_random "1.0.1.1"
+#define MIN_VERSION_random(major1,major2,minor) (\
+  (major1) <  1 || \
+  (major1) == 1 && (major2) <  0 || \
+  (major1) == 1 && (major2) == 0 && (minor) <= 1)
+
